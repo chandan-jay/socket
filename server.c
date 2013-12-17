@@ -16,7 +16,9 @@
 #include <dirent.h>
 #include <signal.h>
 #include <fcntl.h>
+#include <errno.h>
 #define SIZE 1024
+extern int h_errno;
 
 int server_sockfd;
 
@@ -38,7 +40,6 @@ int main(int argc, int *argv[])
     act.sa_handler = &sig_handler;
     sigaction(SIGINT, &act, NULL);
     sigaction(SIGKILL, &act, NULL);
-    signal(SIGPIPE,SIG_IGN);
 
     int client_sockfd;
     struct sockaddr_in server_address, client_address;
@@ -111,7 +112,7 @@ void *sock_operation(void *sockfd_void)
   int file_fd, rd_bytes;
   DIR *dir;
   struct dirent *ds;
-  char *server_root="/home/chandan/KnowledgeBase/";
+  char *server_root="/workspace/Socket/";
   char file_path[SIZE];
 
   printf("=============\n");
@@ -119,9 +120,13 @@ void *sock_operation(void *sockfd_void)
   while(sockfd != 0)
     {
       recv_bytes = recv(sockfd, buff_r, SIZE, 0);
-      //printf("Data Read from client : %s\n", buff_r);
+      if ((recv_bytes <= 0))
+        {
+          printf("Error received");
+          pthread_exit(NULL);
+        }
       if(strlen(buff_r) < 1) continue;
-      fflush(stdout);
+//      fflush(stdout);
       char *str_r=malloc(sizeof(buff_r));
       int i = 0, j =0;
       strcpy(str_r, buff_r);
@@ -146,6 +151,7 @@ void *sock_operation(void *sockfd_void)
 	  {
 	    rd_bytes = read(file_fd, buff_s, SIZE);
 	    send_bytes = send(sockfd, buff_s, rd_bytes, 0);
+            memset(buff_s, 0, SIZE);
 	    if(rd_bytes < SIZE) break;
 	  }
       }
