@@ -97,7 +97,8 @@ int main(int argc, int *argv[])
 
 	thread_ret = pthread_create(&thread_id, &attr, &sock_operation, (void *)&client_sockfd);
     }
-    //    close(server_sockfd);
+
+    close(server_sockfd);
     return 0;
 }
 
@@ -126,7 +127,7 @@ void *sock_operation(void *sockfd_void)
           pthread_exit(NULL);
         }
       if(strlen(buff_r) < 1) continue;
-//      fflush(stdout);
+      fflush(stdout);
       char *str_r=malloc(sizeof(buff_r));
       int i = 0, j =0;
       strcpy(str_r, buff_r);
